@@ -1,0 +1,17 @@
+h1, h2 {
+  text-align: center;
+}
+
+.mainBlock {
+  background-color: #EDEDED;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  border-bottom: 8px solid #2EE59D;
+  border-radius: 10px;
+}
