@@ -1,6 +1,8 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import { nanoid } from 'nanoid';
-import css from './App.module.css'
+import css from './App.module.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import {ContactForm} from './ContactForm/ContactForm';
 import {Filter} from './Filter/Filter';
@@ -8,145 +10,117 @@ import {ContactList} from './ContactList/ContactList';
 
 let contactsName = []
 
-export class App extends Component  {
-  state = {
-    contacts: [],
-    filter: '',
-  }
+export const App = () => {
+  const [contacts, setContacts] = useState([]);
+  const [filter, setFilter] = useState('');
 
-  addContacts = (name, number) => {
+  useEffect(() => {
+    const contactsStorage = localStorage.getItem('contacts');
+    
+      if(contactsStorage) {
+        setContacts(JSON.parse(contactsStorage));
+      }
+
+  }, []);
+
+  useEffect(() => {
+    contacts.length &&
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+
+  const addContacts = (name, number) => {
     const contact = {
       id: nanoid(),
       name,
       number
     };
 
-    this.setState(prevState => ({
-      contacts: [contact, ...prevState.contacts],
-    }))
+    setContacts((prevContacts) => [contact, ...prevContacts]);
   }
 
-  deleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id)
-    }))
+  const deleteContact = id => {
+    setContacts((prevContacts) => prevContacts.filter(contact => contact.id !== id));
+
+    toast.error('Delete contact', {
+        position: "top-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+    });
   }
 
-  formSubmitData = ({name, number}) => {   
-    this.state.contacts.forEach(contact => {
+  const formSubmitData = (name, number) => {   
+    contacts.forEach(contact => {
       contactsName.push(contact.name);
     });
 
     if (contactsName.includes(name)) {
-      alert(`${name} is already in contacts`);
+      toast.warn(`${name} is already in contacts`, {
+        position: "top-center",
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
     } else {
-      this.addContacts(name, number); 
+      addContacts(name, number);
+
+      toast.success('Add contact', {
+        position: "top-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+    }); 
     }
 
   }
 
-  changeFilter = (e) => {
-    this.setState({
-      filter: e.target.value,
-    })
+  const changeFilter = (e) => {
+    setFilter(e.target.value);
   }
 
-  getVisibleContact = () => {
-    const {filter, contacts} = this.state;
-
+  const getVisibleContact = () => {
     const normalizedFilter = filter.toLowerCase();
     return contacts.filter(contact => contact.name.toLowerCase().includes(normalizedFilter));
   };
+  
+  const visibleContact = getVisibleContact();
 
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
-    const parsedContacts = JSON.parse(contacts);
-
-    if(parsedContacts) {
-      this.setState({contacts: parsedContacts})
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
-
-  render() {
-    const {filter} = this.state;
-    const visibleContact = this.getVisibleContact();
-    return (
-      <div
+  return (
+    <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        color: '#010101',
-        paddingTop: 20
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      color: '#010101',
+      paddingTop: 20
       }}
-      >
-        <div className={css.mainBlock}>
-          <h1>Phonebook</h1>
-          <ContactForm onSubmit={this.formSubmitData}/>
-          {/* <form onSubmit={this.handleSubmit} className={css.form}>
-            <label className={css.label}>
-              Name
-            <input
-            className={css.input}
-            type="text"
-            placeholder="Enter your name"
-            name="name"
-            value = {name}
-            onChange={this.handleChange}
-            pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-            title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-            required
-            />
-            </label>
+    >
 
-            <label className={css.label}>
-              Number
-            <input
-            className={css.input}
-            type="text"
-            placeholder="Enter your number"
-            name="number"
-            value = {number}
-            onChange={this.handleChange}
-            pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-            title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-            required
-            />
-            </label>
+      <div className={css.mainBlock}>
+        <h1>Phonebook</h1>
+        <ContactForm onSubmit={formSubmitData}/>
 
-            <button className={css.button} type="submit">Add contact</button>
-          </form> */}
-          <h2>Contacts</h2>
-          <Filter filter={filter} changeFilter={this.changeFilter}/>
-      {/* <label className={`${css.label} ${css.filter}`}>
-            Find contacts by name
-          <input
-            className={css.input}
-            type="text"
-            placeholder="Enter your name"
-            name="filter"
-            value = {filter}
-            onChange={this.changeFilter}
-            pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-          />
-          </label> */}
-          <ContactList visibleContact={visibleContact} deleteContact={this.deleteContact}/>
-      {/* <ul>
-        {visibleContact.map(({id, name, number}) => {
-          return (
-            <li className={css.item} key={id}>{name}: {number}</li>
-          )
-        })}
-      </ul> */}
-        </div>
+        <h2>Contacts</h2>
+        <Filter filter={filter} changeFilter={changeFilter}/>
+
+        <ContactList visibleContact={visibleContact} deleteContact={deleteContact}/>
+      </div>
+
+      <ToastContainer />
     </div>
-    )
-  };
-};
+  )
+  
+}
