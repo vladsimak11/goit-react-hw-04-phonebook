@@ -11,21 +11,11 @@ import {ContactList} from './ContactList/ContactList';
 let contactsName = []
 
 export const App = () => {
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState( () => JSON.parse(localStorage.getItem('contacts')) ?? []);
   const [filter, setFilter] = useState('');
 
   useEffect(() => {
-    const contactsStorage = localStorage.getItem('contacts');
-    
-      if(contactsStorage) {
-        setContacts(JSON.parse(contactsStorage));
-      }
-
-  }, []);
-
-  useEffect(() => {
-    contacts.length &&
-      localStorage.setItem('contacts', JSON.stringify(contacts));
+    localStorage.setItem('contacts', JSON.stringify(contacts));
   }, [contacts]);
 
   const addContacts = (name, number) => {
@@ -39,17 +29,19 @@ export const App = () => {
   }
 
   const deleteContact = id => {
-    setContacts((prevContacts) => prevContacts.filter(contact => contact.id !== id));
+    const filteredContacts = contacts.filter(item => item.id !== id);
+    console.log(filteredContacts);
+    setContacts(filteredContacts);
 
     toast.error('Delete contact', {
-        position: "top-center",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      position: "top-center",
+      autoClose: 1000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
     });
   }
 
